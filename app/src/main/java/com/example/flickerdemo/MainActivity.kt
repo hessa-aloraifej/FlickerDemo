@@ -6,6 +6,9 @@ import android.widget.Button
 import android.widget.EditText
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -40,11 +43,28 @@ class MainActivity : AppCompatActivity() {
         }
 
     }
-
-    private fun updateView(list: List<Photo>) {
-        mainRV.adapter = RVAdapter(list)
+    private fun update(list: List<Flicker>) {
+        mainRV.adapter = RVAdapter(this,null,list)
         mainRV.layoutManager = LinearLayoutManager(this)
     }
+    private fun updateView(list: List<Photo>) {
+        mainRV.adapter = RVAdapter(this,list,null)
+        mainRV.layoutManager = LinearLayoutManager(this)
+    }
+    fun save(flicker:Flicker){
+
+        val likedimg = Flicker(flicker.id,flicker.url,flicker.title)
+
+        CoroutineScope(IO).launch {
+            FlickerDatabase.getInstance(applicationContext).FlickerDao().insertImg(likedimg)
+        }
+    }
+    fun remove(flicker:Flicker){
+
+        FlickerDatabase.getInstance(applicationContext).FlickerDao().delete(flicker)
+        update(FlickerDatabase.getInstance(applicationContext).FlickerDao().getAllImg())
+    }
+
 }
 
 
